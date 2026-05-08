@@ -37,15 +37,7 @@ public class CygnusMain {
 
                 if (fields[0].equals("PRODUCT")) {
                     String productId = fields[1];
-                    if (inventory.containsKey(productId)) {
-                        throw new RuntimeException("Duplicate product id.");
-                    }
-                    Product product = new Product(  productId,
-                                                    fields[2],
-                                                    Integer.parseInt(fields[3]),
-                                                    fields[4],
-                                                    fields[5],
-                                                    Integer.parseInt(fields[6]));
+                    Product product = getProduct(fields, inventory, productId);
                     inventory.put(productId, product);
                 }
 
@@ -122,5 +114,36 @@ public class CygnusMain {
 
         System.out.println("ENDINVENTORY");
 
+    }
+
+    private static Product getProduct(String[] fields, TreeMap<String, Product> inventory, String productId) {
+        String name = fields[2];
+        String type = fields[4];
+        String promoCode = fields[5];
+        int price = Integer.parseInt(fields[3]);
+        int stock = Integer.parseInt(fields[6]);
+
+        if (inventory.containsKey(productId)) {
+            throw new RuntimeException("Duplicate product id.");
+        }
+
+        if (!(type.equals("book") || type.equals("children") || type.equals("stationary") || type.equals("game"))) {
+            throw new RuntimeException("Invalid product type.");
+        }
+
+        if (!(promoCode.equals("_") || promoCode.matches("c?f?h?r?t?"))) {
+            throw new RuntimeException("Invalid promo code.");
+        }
+
+        if (!(price > 0 && stock >= 0)) {
+            throw new RuntimeException("Invalid product price or product is out of stock.");
+        }
+
+        return new Product(productId,
+                            name,
+                            price,
+                            type,
+                            promoCode,
+                            stock);
     }
 }
