@@ -24,51 +24,52 @@ public class CygnusMain {
 
                 String[] fields = line.split("\\|");
 
-                if (fields[0].equals("STORE")) {
-                    storeName = fields[1];
-                }
-                else if (fields[0].equals("INVENTORY")) {
-                    if (inventoryStarted) throw new RuntimeException("Duplicate INVENTORY record.");
-                    inventoryStarted = true;
-                    balance = Integer.parseInt(fields[1]);
-                    if (balance < 0) throw new RuntimeException("Negative balance.");
-                }
-                else if (fields[0].equals("PRODUCT")) {
-                    Product product = Product.parse(fields, inventory);
-                    inventory.put(product.getProductId(), product);
-                }
-                else if (fields[0].equals("ENDINVENTORY")) {
-                    inventoryEnded = true;
-                }
-                else if (fields[0].equals("ORDER")) {
-                    String orderId = fields[1];
-                    if (seenOrderIds.contains(orderId)) throw new RuntimeException("Duplicate order ID.");
-                    seenOrderIds.add(orderId);
-                    currentOrderId = orderId;
-                    currentItems = new TreeMap<>();
-                    currentDiscounts = new TreeSet<>();
-                }
-                else if (fields[0].equals("ITEM")) {
-                    if (currentItems == null) throw new RuntimeException("ITEM outside of ORDER.");
-                    int quantity = Integer.parseInt(fields[2]);
-                    if (quantity <= 0) throw new RuntimeException("Item quantity must be positive.");
-                    currentItems.merge(fields[1], quantity, Integer::sum);
-                }
-                else if (fields[0].equals("DISCOUNT")) {
-                    if (currentDiscounts == null) throw new RuntimeException("DISCOUNT outside of ORDER.");
-                    String code = fields[1];
-                    if (!Set.of("UNI", "HEALTH", "PROMO", "EMPLOYEE").contains(code))
-                        throw new RuntimeException("Invalid discount code.");
-                    currentDiscounts.add(code);
-                }
-                else if (fields[0].equals("ENDORDER")) {
-                    orders.add(new Order(currentOrderId, currentItems, currentDiscounts));
-                    currentOrderId = null;
-                    currentItems = null;
-                    currentDiscounts = null;
-                }
-                else {
-                    throw new RuntimeException("Unknown record: " + fields[0]);
+                switch (fields[0]) {
+                    case "STORE" -> {
+                        if (storeName != null) throw new RuntimeException("Duplicate STORE record.");
+                        storeName = fields[1];
+                    }
+                    case "INVENTORY" -> {
+                        if (inventoryStarted) throw new RuntimeException("Duplicate INVENTORY record.");
+                        inventoryStarted = true;
+                        balance = Integer.parseInt(fields[1]);
+                        if (balance < 0) throw new RuntimeException("Negative balance.");
+                    }
+                    case "PRODUCT" -> {
+                        if (!inventoryStarted || inventoryEnded)
+                            throw new RuntimeException("PRODUCT outside of INVENTORY block.");
+                        Product product = Product.parse(fields, inventory);
+                        inventory.put(product.getProductId(), product);
+                    }
+                    case "ENDINVENTORY" -> inventoryEnded = true;
+                    case "ORDER" -> {
+                        String orderId = fields[1];
+                        if (seenOrderIds.contains(orderId)) throw new RuntimeException("Duplicate order ID.");
+                        seenOrderIds.add(orderId);
+                        currentOrderId = orderId;
+                        currentItems = new TreeMap<>();
+                        currentDiscounts = new TreeSet<>();
+                    }
+                    case "ITEM" -> {
+                        if (currentItems == null) throw new RuntimeException("ITEM outside of ORDER.");
+                        int quantity = Integer.parseInt(fields[2]);
+                        if (quantity <= 0) throw new RuntimeException("Item quantity must be positive.");
+                        currentItems.merge(fields[1], quantity, Integer::sum);
+                    }
+                    case "DISCOUNT" -> {
+                        if (currentDiscounts == null) throw new RuntimeException("DISCOUNT outside of ORDER.");
+                        String code = fields[1];
+                        if (!Set.of("UNI", "HEALTH", "PROMO", "EMPLOYEE").contains(code))
+                            throw new RuntimeException("Invalid discount code.");
+                        currentDiscounts.add(code);
+                    }
+                    case "ENDORDER" -> {
+                        orders.add(new Order(currentOrderId, currentItems, currentDiscounts));
+                        currentOrderId = null;
+                        currentItems = null;
+                        currentDiscounts = null;
+                    }
+                    default -> throw new RuntimeException("Unknown record: " + fields[0]);
                 }
             }
 

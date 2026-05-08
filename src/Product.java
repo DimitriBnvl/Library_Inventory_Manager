@@ -26,6 +26,8 @@ public class Product {
         String promoCode = fields[5];
         int stock = Integer.parseInt(fields[6]);
 
+        if (!Character.isUpperCase(productId.charAt(0)))
+            throw new RuntimeException("Product ID must start with a capital letter.");
         if (inventory.containsKey(productId)) throw new RuntimeException("Duplicate product id.");
         if (!Set.of("book", "children", "stationery", "game").contains(type))
             throw new RuntimeException("Invalid product type.");
