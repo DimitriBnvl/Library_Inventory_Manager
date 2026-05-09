@@ -82,6 +82,7 @@ public class CygnusMain {
                         throw new RuntimeException("Unknown product in order: " + productId);
                 }
                 order.computeAcceptance(inventory);
+                order.computePrice(inventory);
             }
 
         } catch (RuntimeException e) {

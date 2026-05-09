@@ -4,7 +4,7 @@ import java.util.TreeSet;
 public class Order {
     final private int orderId;
     private String status;
-    final private int totalPrice;
+    private int totalPrice;
     final private TreeMap<String, Integer> items;
     final private TreeSet<String> discountCode;
 
@@ -25,6 +25,10 @@ public class Order {
             }
         }
         status = "accepted";
+    }
+
+    public void computePrice(TreeMap<String, Product> inventory) {
+        items.forEach((productId, quantity) -> totalPrice += inventory.get(productId).getPrice() * quantity);
     }
 
     public int getOrderId() { return orderId; }
