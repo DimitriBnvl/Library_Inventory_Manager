@@ -7,7 +7,7 @@ public class Product {
     final private int price;
     final private String type;
     final private String code;
-    final private int stock;
+    private int stock;
 
     private Product(String productId, String name, int price, String type, String code, int stock) {
         this.productId = productId;
@@ -37,6 +37,10 @@ public class Product {
         if (stock < 0) throw new RuntimeException("Product stock must be nonnegative.");
 
         return new Product(productId, name, price, type, promoCode, stock);
+    }
+
+    public void reduceStock(int quantity) {
+        stock -= quantity;
     }
 
     public String getProductId() { return productId; }

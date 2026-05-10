@@ -84,6 +84,13 @@ public class CygnusMain {
 
                 order.computeAcceptance(inventory);
                 order.computePrice(inventory);
+
+                if (order.getStatus().equals("accepted")) {
+                    for (var entry : order.getItems().entrySet()) {
+                        inventory.get(entry.getKey()).reduceStock(entry.getValue());
+                    }
+                    balance += order.getTotalPrice();
+                }
             }
 
         } catch (RuntimeException e) {
