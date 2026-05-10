@@ -81,6 +81,7 @@ public class CygnusMain {
                     if (!inventory.containsKey(productId))
                         throw new RuntimeException("Unknown product in order: " + productId);
                 }
+
                 order.computeAcceptance(inventory);
                 order.computePrice(inventory);
             }
@@ -97,8 +98,8 @@ public class CygnusMain {
             for (var entry : order.getItems().entrySet()) {
                 System.out.println("ITEM|" + entry.getKey() + "|" + entry.getValue());
             }
-            if (!order.getDiscountCode().isEmpty()) {
-                System.out.println("DISCOUNT|" + order.getDiscountCode().first());
+            if (!order.getAppliedDiscountCode().isEmpty()) {
+                System.out.println("DISCOUNT|" + order.getAppliedDiscountCode());
             }
             System.out.println("ENDORDER");
             System.out.println();
