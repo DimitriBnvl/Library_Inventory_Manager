@@ -8,8 +8,8 @@ public class Order {
     final private TreeSet<String> discountCode;
     private String appliedDiscountCode;
 
-    public Order(String orderId, TreeMap<String, Integer> items, TreeSet<String> discountCode) {
-        this.orderId = Integer.parseInt(orderId);
+    public Order(int orderId, TreeMap<String, Integer> items, TreeSet<String> discountCode) {
+        this.orderId = orderId;
         this.status = "rejected";
         this.totalPrice = 0;
         this.items = items;
@@ -18,8 +18,6 @@ public class Order {
     }
 
     public void computeAcceptance(TreeMap<String, Product> inventory) {
-        if (orderId <= 0) throw new RuntimeException("Order ID must be nonnegative.");
-
         for (var entry : items.entrySet()) {
             if (inventory.get(entry.getKey()).getStock() < entry.getValue()) {
                 return;
@@ -75,11 +73,12 @@ public class Order {
 
         for (var entry : subset.entrySet()) {
             String productId = entry.getKey();
+            Product product = inventory.get(productId);
             int quantity = entry.getValue();
-            int productPrice = inventory.get(productId).getPrice();
+            int productPrice = product.getPrice();
             total += productPrice * quantity;
 
-            if (inventory.get(productId).getCode().contains("c")) {
+            if (product.getCode().contains("c")) {
                 for (int i = 0; i < quantity; i++) {
                     eligiblePrices.add(productPrice);
                 }

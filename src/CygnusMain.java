@@ -2,20 +2,19 @@ import java.util.*;
 
 public class CygnusMain {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
         String storeName = null;
         int balance = 0;
 
         TreeMap<String, Product> inventory = new TreeMap<>();
         List<Order> orders = new ArrayList<>();
-        Set<String> seenOrderIds = new HashSet<>();
-        String currentOrderId = null;
+        Set<Integer> seenOrderIds = new HashSet<>();
+        int currentOrderId = 0;
         TreeMap<String, Integer> currentItems = null;
         TreeSet<String> currentDiscounts = null;
         boolean inventoryStarted = false;
         boolean inventoryEnded = false;
 
-        try {
+        try (Scanner sc = new Scanner(System.in)) {
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
 
@@ -43,7 +42,8 @@ public class CygnusMain {
                     }
                     case "ENDINVENTORY" -> inventoryEnded = true;
                     case "ORDER" -> {
-                        String orderId = fields[1];
+                        int orderId = Integer.parseInt(fields[1]);
+                        if (orderId <= 0) throw new RuntimeException("Order ID must be nonnegative.");
                         if (seenOrderIds.contains(orderId)) throw new RuntimeException("Duplicate order ID.");
                         seenOrderIds.add(orderId);
                         currentOrderId = orderId;
@@ -65,7 +65,7 @@ public class CygnusMain {
                     }
                     case "ENDORDER" -> {
                         orders.add(new Order(currentOrderId, currentItems, currentDiscounts));
-                        currentOrderId = null;
+                        currentOrderId = 0;
                         currentItems = null;
                         currentDiscounts = null;
                     }
@@ -74,7 +74,8 @@ public class CygnusMain {
             }
 
             if (!inventoryEnded) throw new RuntimeException("Missing ENDINVENTORY.");
-            if (currentOrderId != null) throw new RuntimeException("Missing ENDORDER.");
+            if (currentOrderId != 0) throw new RuntimeException("Missing ENDORDER.");
+            if (storeName == null) throw new RuntimeException("Missing STORE name record.");
 
             for (Order order : orders) {
                 for (String productId : order.getItems().keySet()) {
